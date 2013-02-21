@@ -42,6 +42,21 @@ def run(command):
 		duration = parts[1]
 		time.sleep(float(duration))
 
+	elif func == 'add':
+		# add oneliner to library
+		oneliner = (parts[1], parts[2])
+		add_oneliner(oneliner)
+
+	elif func == 'import':
+		# add contents of libfile to library
+		libfile = parts[1]
+		import_library(libfile)
+
+	elif func == 'list':
+		# list contents of library
+		for entry in library:
+			print '%s\t%s' % entry
+
 	elif func == 'exec':
 		# execute mixfile
 		mixfile = parts[1]
@@ -53,19 +68,33 @@ def run(command):
 	else:
 		print 'Unknown command: %s' % func
 
-library = {
-	'alex1': "t>>4|t>>2|t+t/2", # this one's my own
-	'tejeez1': "(t*(t>>5|t>>8))>>(t>16)", # credit to tejeez (from viznut's 1st video)
-	'viznut1': "(t*5&t>>7)|(t*3&t>>10)" # credit to viznut (from viznut's 3rd video)
-}
+def add_oneliner(oneliner):
+	name, code = oneliner
+	program = "main(t){for(t=0;;t++)putchar(%s);}" % code
+	os.system('echo "%s" > _temp.c' % program)
+	os.system('gcc _temp.c -o _temp_%s' % name)
+	library.append(oneliner)
+
+def import_library(library):
+	count = 0
+	for line in open(library):
+		try:
+			line = line.strip()
+			if len(line) == 0 or line[0] == '#':
+				continue
+
+			parts = line.split('\t')
+			oneliner = (parts[0], parts[1])
+			add_oneliner(oneliner)
+			count += 1
+		except Exception:
+			continue
+	print 'Imported %d oneliners' % count
 
 running = {}
+library = []
 
-for key, oneliner in library.iteritems():
-	program = "main(t){for(t=0;;t++)putchar(%s);}" % oneliner
-	os.system('echo "%s" > _temp.c' % program)
-	os.system('gcc _temp.c -o _temp_%s' % key)
-
+import_library('builtins.lib')
 while True:
 	try:
 		command = raw_input('>')
@@ -81,6 +110,6 @@ while True:
 
 print 'Cleaning up ...'
 os.system('killall aplay > /dev/null 2>&1')
-for key in library.keys():
-	os.system('killall _temp_%s > /dev/null 2>&1' % key)
+for entry in library:
+	os.system('killall _temp_%s > /dev/null 2>&1' % entry[0])
 os.system('rm _temp* > /dev/null 2>&1')

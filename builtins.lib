@@ -1,0 +1,8 @@
+# this one's my own
+alex1	t>>4|t>>2|t+t/2
+
+# from viznut's 1st video
+tejeez1	(t*(t>>5|t>>8))>>(t>16)
+
+# from viznut's 3rd video
+viznut1	(t*5&t>>7)|(t*3&t>>10)
