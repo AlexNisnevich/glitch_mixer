@@ -1,8 +1,14 @@
-# this one's my own
-alex1	t>>4|t>>2|t+t/2
-
 # from viznut's 1st video
+viznut1	t*((t>>12|t>>8)&63&t>>4)
 tejeez1	(t*(t>>5|t>>8))>>(t>16)
+visy1	t*((t>>9|t>>13)&25&t>>6)
+tejeez2	t*(t>>11&t>>8&123&t>>3)
+visy2	(t*(t>>8*(t>>15|t>>8)&(20|(t>>19)*5>>t|t>>3)))
+tejeez3	((-t&4095)*(255&t*(t&t>>13))>>12)+(127&t*(234&t>>8&t>>3)>>(3&t>>14))
+pong	(t*(t>>((t>>9|t>>8))&63&t>>4))	# credit to visy
 
 # from viznut's 3rd video
-viznut1	(t*5&t>>7)|(t*3&t>>10)
+viznut30	(t*5&t>>7)|(t*3&t>>10)
+
+# this one's my own
+alex1	t>>4|t>>2|t+t/2

@@ -1,0 +1,10 @@
+# demonstration of random options and bounded and unbounded loops
+loop 3
+	start random
+	sleep random
+next
+loop
+	stop random
+	start random
+	sleep random
+next
