@@ -1,0 +1,19 @@
+# simple program to test start/stop/sleep functionality
+start alex1
+sleep 4
+start tejeez1
+sleep 3
+stop alex1
+sleep 5
+stop tejeez1
+start alex1
+start viznut1
+sleep 8
+start alex1
+sleep 3
+start alex1
+sleep 3
+start alex1
+sleep 3
+start alex1
+sleep 2
