@@ -1,14 +1,32 @@
-# from viznut's 1st video
+# Format of .lib files:
+# name (tab) code [(tab) # comment]
+
+# from viznut's 1st video [http://youtu.be/GtQdIYUtAHg]
 viznut1	t*((t>>12|t>>8)&63&t>>4)
 tejeez1	(t*(t>>5|t>>8))>>(t>16)
 visy1	t*((t>>9|t>>13)&25&t>>6)
 tejeez2	t*(t>>11&t>>8&123&t>>3)
 visy2	(t*(t>>8*(t>>15|t>>8)&(20|(t>>19)*5>>t|t>>3)))
 tejeez3	((-t&4095)*(255&t*(t&t>>13))>>12)+(127&t*(234&t>>8&t>>3)>>(3&t>>14))
-pong	(t*(t>>((t>>9|t>>8))&63&t>>4))	# credit to visy
+pong	(t*(t>>((t>>9|t>>8))&63&t>>4))	# by visy
 
-# from viznut's 3rd video
-viznut30	(t*5&t>>7)|(t*3&t>>10)
+# from viznut's 2nd video [http://youtu.be/qlrs2Vorw2Y]
+viznut4	(t>>6|t|t>>(t>>16))*10+((t>>11)&7)
+pyryp	v=(v>>1)+(v>>4)+t*(((t>>16)|(t>>6))&(69&(t>>9)))
+red-	(t|(t>>9|t>>7))*t&(t>>11|t>>9)
+miiro	t*5&(t>>7)|t*3&(t*4>>10)
+viznut5	(t>>7|t|t>>6)*10+4*(t&t>>13|t>>6)	# credit also goes to xpansive and varjohukka@pouet.net
+skurk	((t&4096)?(((t*t^t%255)|(t>>4))>>1):(t>>3)|((t&8192)?t<<2:t))	# credit also goes to raer
+lostinspace	((t*(t>>8|t>>9)&46&t>>8))^(t&t>>13|t>>6)	# by xpansive
+
+# from viznut's 3rd video [http://youtu.be/tCRPUv8V22o]
+viznut6	(t*5&t>>7)|(t*3&t>>10)
+bst	(int)(t/1e7*t*t+t)%127|t>>4|t>>5|t%127+(t>>16)|t
+kb	((t/2*(15&(0x234568a0>>(t>>8&28))))|t/2>>(t>>11)^t>12)+(t/16&t&24)
+viznut7	(t&t%255)-(t*3&t>>13&t>>6)
+stephth	(t*9&t>>4|t*5&t>>7|t*3&t/1024)-1	# credit also goes to viznut
+inferno	((t*(t>>12)&(201*t/100)&(199*t/100))&(t*(t>>14)&(t*301/100)&(t*399/100)))+((t*(t>>16)&(t*202/100)&(t*198/100))-(t*(t>>17)&(t*302/100)&(t*298/100)))	# by viznut and oasiz
+216	t*(t^t+(t>>15|1)^(t-1280^t)>>10)
 
 # this one's my own
-alex1	t>>4|t>>2|t+t/2
+bass	t>>4|t>>2|t+t/2

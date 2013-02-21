@@ -134,7 +134,7 @@ def add_oneliner(oneliner):
 	name, code = oneliner
 	if name in RESERVED:
 		raise Exception('%s is a reserved word!' % name)
-	program = "main(t){for(t=0;;t++)putchar(%s);}" % code
+	program = "main(t,v){for(t=0;;t++)putchar(%s);}" % code
 	os.system('echo "%s" > _temp_%s.c' % (program, name))
 	os.system('gcc _temp_%s.c -o _temp_%s' % (name, name))
 	library.append(oneliner)
