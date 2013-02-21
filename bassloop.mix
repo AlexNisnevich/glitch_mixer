@@ -1,0 +1,18 @@
+sub bassloop
+	start bass
+	sleep 2
+	stop bass
+	start viznut6
+	sleep 2
+	stop viznut6
+end
+
+bassloop
+bassloop
+
+loop
+	start random
+	bassloop
+	bassloop
+	stop
+next

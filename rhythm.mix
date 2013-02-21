@@ -1,0 +1,24 @@
+sub beep
+	start bass
+	sleep 0.1
+	stop bass
+end
+
+sub rhythm
+	beep
+	sleep 0.4
+	beep
+	sleep 0.15
+	beep
+	sleep 0.4
+	beep
+	sleep 0.15
+	beep
+	sleep 0.15
+	beep
+	sleep 0.15
+end
+
+loop
+	rhythm
+end

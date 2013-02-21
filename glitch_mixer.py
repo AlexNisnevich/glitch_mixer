@@ -20,15 +20,23 @@ RESERVED = ['random']
 
 running = {}
 library = []
+subroutine = False # name of subroutine currently being defined or False
+subroutines = {}
 loop = False # number of iterations or False
 loop_contents = []
+prompt = '> '
+mixfile = False # name of currently executing mixfile or False
 
 def run(command):
-	global running, library, loop, loop_contents
+	global running, library, subroutine, subroutines, loop, loop_contents, mixfile
 
-	if loop and command != 'next':
+	if loop and command != 'end':
 		# defining a loop - do not execute this command yet
 		loop_contents.append(command)
+		return
+	elif subroutine and command != 'end':
+		# defining a subroutine - do not execute this command yet
+		subroutines[subroutine].append(command)
 		return
 
 	parts = command.split(' ')
@@ -38,13 +46,17 @@ def run(command):
 	if len(func) == 0 or func == '#':
 		pass
 
+	#
+	#-- Basic functions --#
+	#
+
 	# play specified oneliner
 	elif func == 'start':
 		name = parts[1]
 		if name == 'random':
 			name = random.choice(library)[0]
 
-		process = sub.Popen('%s/_temp_%s' % (os.getcwd(), name), stdout=sub.PIPE)
+		process = sub.Popen('%s/.temp_%s' % (os.getcwd(), name), stdout=sub.PIPE)
 		aplay_process = sub.Popen('aplay -q', stdin=process.stdout, shell=True, preexec_fn=os.setsid)
 		running.setdefault(name, []).append((process, aplay_process))
 
@@ -73,9 +85,13 @@ def run(command):
 		if parts[1] == 'random':
 			duration = random.randint(0, 3)
 		else:
-			durattion = float(parts[1])
+			duration = float(parts[1])
 
 		time.sleep(float(duration))
+
+	#
+	#-- Library functions --#
+	#
 
 	# add oneliner to library
 	elif func == 'add':
@@ -92,6 +108,10 @@ def run(command):
 		for entry in library:
 			print '%s\t%s' % entry
 
+	#
+	#-- Control flow functions --#
+	#
+
 	# begin an loop ("loop X" is a finite loop, "loop" is an infinite loop)
 	# no nesting of loops is allowed
 	elif func == 'loop':
@@ -103,18 +123,35 @@ def run(command):
 		loop_contents = []
 		loop = iterations
 
-	# mark the endpoint of a loop
-	elif func == 'next':
-		iterations = loop
-		loop = False
+	# begin a subroutine definition
+	# subroutines do not take any parameters
+	elif func == 'sub':
+		subroutine = parts[1]
+		subroutines[subroutine] = []
 
-		for _ in range(iterations):
-			try:
-				for command in loop_contents:
-					run(command)
-			except KeyboardInterrupt:
-				print
-				break
+	# end a loop or subroutine definition
+	elif func == 'end':
+		if mixfile:
+			print "\033[Aend        " # overwrite last "> \t end" to "end"
+		else:
+			print "\033[A> end      " # overwrite last "> \t end" to "> end"
+
+		if subroutine:
+			subroutine = False
+		elif loop:
+			iterations = loop
+			loop = False
+			for _ in range(iterations):
+				try:
+					for command in loop_contents:
+						run(command)
+				except KeyboardInterrupt:
+					print
+					break
+
+	#
+	#-- Mixfile functions --#
+	#
 
 	# execute mixfile
 	elif func == 'exec':
@@ -127,16 +164,22 @@ def run(command):
 			except KeyboardInterrupt:
 				print
 				break
+		mixfile = False
+
 	else:
-		print 'Unknown command: %s' % func
+		if func in subroutines:
+			for command in subroutines[func]:
+				run(command)
+		else:
+			print 'Unknown command: %s' % func
 
 def add_oneliner(oneliner):
 	name, code = oneliner
 	if name in RESERVED:
 		raise Exception('%s is a reserved word!' % name)
 	program = "main(t,v){for(t=0;;t++)putchar(%s);}" % code
-	os.system('echo "%s" > _temp_%s.c' % (program, name))
-	os.system('gcc _temp_%s.c -o _temp_%s' % (name, name))
+	os.system('echo "%s" > .temp_%s.c' % (program, name))
+	os.system('gcc .temp_%s.c -o .temp_%s' % (name, name))
 	library.append(oneliner)
 
 def import_library(library):
@@ -153,12 +196,13 @@ def import_library(library):
 			count += 1
 		except Exception, e:
 			print 'Error importing "%s": %s' % (line, e)
-	print 'Imported %d oneliners' % count
+	print 'Imported %d oneliners from %s' % (count, library)
 
 import_library('builtins.lib')
 while True:
 	try:
-		command = raw_input('>')
+		prompt = '> \t' if (loop or subroutine) else '> '
+		command = raw_input(prompt)
 		if command == 'exit' or command == 'quit':
 			break
 		else:
@@ -172,5 +216,5 @@ while True:
 print 'Cleaning up ...'
 os.system('killall aplay > /dev/null 2>&1')
 for entry in library:
-	os.system('killall _temp_%s > /dev/null 2>&1' % entry[0])
-os.system('rm _temp* > /dev/null 2>&1')
+	os.system('killall .temp_%s > /dev/null 2>&1' % entry[0])
+os.system('rm .temp* > /dev/null 2>&1')
