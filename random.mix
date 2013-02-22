@@ -2,9 +2,9 @@
 loop 3
 	start random
 	sleep random
-next
+end
 loop
 	stop random
 	start random
 	sleep random
-next
+end

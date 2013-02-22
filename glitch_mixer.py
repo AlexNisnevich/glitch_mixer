@@ -16,7 +16,8 @@ import signal
 import random
 
 FNULL = open(os.devnull, 'w')
-RESERVED = ['random']
+RESERVED = ['random', 'start', 'stop', 'sleep', 'running', 'add', 'import', 'list',
+			'loop', 'sub', 'end', 'exec', 'help', '#']
 
 running = {}
 library = []
@@ -89,6 +90,10 @@ def run(command):
 
 		time.sleep(float(duration))
 
+	elif func == 'running':
+		for pname in running.keys():
+			print "\t%s" % pname
+
 	#
 	#-- Library functions --#
 	#
@@ -106,7 +111,7 @@ def run(command):
 	# list contents of library
 	elif func == 'list':
 		for entry in library:
-			print '%s\t%s' % entry
+			print '\t%s\t%s' % entry
 
 	#
 	#-- Control flow functions --#
@@ -126,6 +131,8 @@ def run(command):
 	# begin a subroutine definition
 	# subroutines do not take any parameters
 	elif func == 'sub':
+		if parts[1] in RESERVED:
+			raise Exception('%s is a reserved word!' % parts[1])
 		subroutine = parts[1]
 		subroutines[subroutine] = []
 
@@ -150,7 +157,7 @@ def run(command):
 					break
 
 	#
-	#-- Mixfile functions --#
+	#-- Misc functions --#
 	#
 
 	# execute mixfile
@@ -165,6 +172,29 @@ def run(command):
 				print
 				break
 		mixfile = False
+
+	# display help
+	elif func == 'help':
+		print """Supported commands:
+	list              - list all currently loaded oneliners
+	add [name] [code] - add a new oneliner to the library
+	import [libfile]  - import all oneliners from a file (see builtins.lib for an example)
+
+	start [name]      - start the oneliner with the given name
+	start random      - start a random oneliner in the library
+	stop              - stop all currently running oneliners
+	stop [name]       - stop the currently running oneliner of the given name
+	stop random       - stop a random currently running oneliner
+	running           - list all currently running oneliners
+
+	sleep [secs]      - pause for the specified number of seconds
+	sleep random      - pause for randint(0, 3) seconds
+	loop              - begin defining a loop that will run infinitely (break out of it with Ctrl-C)
+	loop [num]        - begin defining a loop that will run for the given number of iterations
+	sub [name]        - begin defining a subroutine with the given name
+	end               - end a loop or subroutine definition
+	exec [mixfile]    - execute the commands in the given file
+	[name]            - run a subroutine of the given name, if one exists"""
 
 	else:
 		if func in subroutines:

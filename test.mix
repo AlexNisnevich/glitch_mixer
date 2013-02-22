@@ -1,19 +1,14 @@
-# simple program to test start/stop/sleep functionality
+# "Pong in Space"
+# simple program to test start/stop/sleep/add functionality
+
+add click t>>4
+start click
+sleep 4
 start bass
 sleep 4
-start tejeez1
-sleep 3
-stop bass
-sleep 5
-stop tejeez1
-start bass
-start viznut1
+start lostinspace
+stop click
 sleep 8
-start bass
-sleep 3
-start bass
-sleep 3
-start bass
-sleep 3
-start bass
-sleep 2
+start pong
+sleep 4
+stop bass
