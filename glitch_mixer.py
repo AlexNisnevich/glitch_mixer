@@ -9,11 +9,13 @@
 # execute arbitrary code. Be safe.
 
 import os
+import sys
 import subprocess as sub
 import time
 import traceback
 import signal
 import random
+import signal
 
 FNULL = open(os.devnull, 'w')
 RESERVED = ['random', 'start', 'stop', 'sleep', 'running', 'add', 'import', 'list',
@@ -27,9 +29,27 @@ loop = False # number of iterations or False
 loop_contents = []
 prompt = '> '
 mixfile = False # name of currently executing mixfile or False
+bg_jobs = []
+
+def cleanup(sig=None, func=None):
+	global library;
+
+	print 'Cleaning up ...'
+
+	for name in running.keys():
+		for processes in running[name]:
+			processes[0].terminate()
+			os.killpg(processes[1].pid, signal.SIGTERM)
+
+	if sig == signal.SIGINT:
+		for entry in library:
+			os.system('killall .temp_%s > /dev/null 2>&1' % entry[0])
+		os.system('rm .temp* > /dev/null 2>&1')
+
+	sys.exit(0)
 
 def run(command):
-	global running, library, subroutine, subroutines, loop, loop_contents, mixfile
+	global running, library, subroutine, subroutines, loop, loop_contents, mixfile, bg_jobs
 
 	if loop and command != 'end':
 		# defining a loop - do not execute this command yet
@@ -162,16 +182,33 @@ def run(command):
 
 	# execute mixfile
 	elif func == 'exec':
-		mixfile = parts[1]
-		for line in open(mixfile):
-			try:
-				print line,
-				line = line.strip()
-				run(line)
-			except KeyboardInterrupt:
-				print
-				break
-		mixfile = False
+		filename = parts[1]
+		execute(filename)
+
+	# execute mixfile in background thread
+	elif func == 'thread':
+		filename = parts[1]
+		job = sub.Popen([__file__, filename], stdout=FNULL)
+		print 'Starting background job with PID %d' % job.pid
+		bg_jobs.append((job, filename))
+
+	# list background jobs
+	elif func == 'bg':
+		for job in bg_jobs:
+			print '\t%d\t%s' % (job[0].pid, job[1])
+
+	# kill background job of specified PID
+	elif func == 'kill':
+		pid = int(parts[1])
+		jobs = [job for job in bg_jobs if job[0].pid == pid]
+		if len(jobs) > 0:
+			print 'Killing background job with PID %d' % pid
+			jobs[0][0].terminate()
+			bg_jobs.remove(jobs[0])
+
+	#
+	#-- Misc functions --#
+	#
 
 	# display help
 	elif func == 'help':
@@ -193,8 +230,13 @@ def run(command):
 	loop [num]        - begin defining a loop that will run for the given number of iterations
 	sub [name]        - begin defining a subroutine with the given name
 	end               - end a loop or subroutine definition
+	[name]            - run a subroutine of the given name, if one exists
+
 	exec [mixfile]    - execute the commands in the given file
-	[name]            - run a subroutine of the given name, if one exists"""
+	thread [mixfile]  - execute the commands in the given file in a background thread
+	kill [pid]        - kill the background thread with the given process ID
+	bg                - list all currently running background threads
+	"""
 
 	else:
 		if func in subroutines:
@@ -228,23 +270,37 @@ def import_library(library):
 			print 'Error importing "%s": %s' % (line, e)
 	print 'Imported %d oneliners from %s' % (count, library)
 
-import_library('builtins.lib')
-while True:
-	try:
-		prompt = '> \t' if (loop or subroutine) else '> '
-		command = raw_input(prompt)
-		if command == 'exit' or command == 'quit':
-			break
-		else:
-			run(command)
-	except Exception:
-		traceback.print_exc()
-	except KeyboardInterrupt:
-		print
-		break
+def execute(file):
+	global mixfile
 
-print 'Cleaning up ...'
-os.system('killall aplay > /dev/null 2>&1')
-for entry in library:
-	os.system('killall .temp_%s > /dev/null 2>&1' % entry[0])
-os.system('rm .temp* > /dev/null 2>&1')
+	mixfile = file
+	for line in open(mixfile):
+		try:
+			print line,
+			line = line.strip()
+			run(line)
+		except KeyboardInterrupt:
+			print
+			break
+	mixfile = False
+
+signal.signal(signal.SIGTERM, cleanup)
+import_library('builtins.lib')
+if len(sys.argv) > 1:
+	print 'Executing mixfile: %s' % sys.argv[1]
+	execute(sys.argv[1])
+else:
+	while True:
+		try:
+			prompt = '> \t' if (loop or subroutine) else '> '
+			command = raw_input(prompt)
+			if command == 'exit' or command == 'quit':
+				break
+			else:
+				run(command)
+		except Exception:
+			traceback.print_exc()
+		except KeyboardInterrupt:
+			print
+			break
+cleanup(signal.SIGINT)
