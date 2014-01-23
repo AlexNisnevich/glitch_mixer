@@ -76,8 +76,14 @@ def run(command):
 			name = random.choice(library)[0]
 
 		process = sub.Popen('%s/.temp_%s' % (os.getcwd(), name), stdout=sub.PIPE)
-		aplay_process = sub.Popen('sox -traw -r8000 -b8 -u - -tcoreaudio >/dev/null 2>&1', stdin=process.stdout, stdout=FNULL, shell=True, preexec_fn=os.setsid)
-		running.setdefault(name, []).append((process, aplay_process))
+		if sys.platform == 'linux2':
+			play_command = 'aplay -q'
+		elif sys.platform == 'darwin':
+			play_command = 'sox -traw -r8000 -b8 -u - -tcoreaudio >/dev/null 2>&1'
+		else:
+			raise 'Unsupported operating system!'
+		play_process = sub.Popen(play_command, stdin=process.stdout, shell=True, preexec_fn=os.setsid)
+		running.setdefault(name, []).append((process, play_process))
 
 	# stop the specified oneliner (if none specified, stop all)
 	elif func == 'stop':
