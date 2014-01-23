@@ -77,11 +77,11 @@ def run(command):
 
 		process = sub.Popen('%s/.temp_%s' % (os.getcwd(), name), stdout=sub.PIPE)
 		if sys.platform == 'linux2':
+			# Linux - we can just use aplay
 			play_command = 'aplay -q'
-		elif sys.platform == 'darwin':
-			play_command = 'sox -traw -r8000 -b8 -u - -tcoreaudio >/dev/null 2>&1'
 		else:
-			raise 'Unsupported operating system!'
+			# Not Linux - try to use sox
+			play_command = 'sox -traw -r8000 -b8 -u - -tcoreaudio >/dev/null 2>&1'
 		play_process = sub.Popen(play_command, stdin=process.stdout, shell=True, preexec_fn=os.setsid)
 		running.setdefault(name, []).append((process, play_process))
 
