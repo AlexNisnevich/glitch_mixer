@@ -3,11 +3,23 @@ glitch_mixer
 
 **glitch_mixer** is a simple mixer/sequencer for [minimalist algorithmic compositions](http://countercomplex.blogspot.com/2011/10/algorithmic-symphonies-from-one-line-of.html).
 
-At the moment, glitch_mixer requires ALSA, so it will only run on Linux. Sorry!
-
 ### Video Demonstration
 
 [![Link to Youtube video](images/youtube/QlrvXomSArY.png)](http://www.youtube.com/watch?v=QlrvXomSArY)
+
+### Installation
+
+#### Linux
+
+Should work out of the box, as long as you have ALSA and gcc.
+
+#### OS X
+
+Install Homebrew, then run `brew install sox`. Make sure gcc is installed too.
+
+#### Windows
+
+I haven't tried it in Windows yet - it might work if you install [SoX](http://sox.sourceforge.net/), but I doubt that Windows will like all the crazy threading and piping stuff going on.
 
 ### Warning
 
