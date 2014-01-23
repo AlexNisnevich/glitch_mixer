@@ -3,8 +3,6 @@
 # Mixer and sequencer for minimalist algorithmic compositions
 # (a la http://countercomplex.blogspot.com/2011/10/algorithmic-symphonies-from-one-line-of.html)
 #
-# Requires ALSA, so for the moment it will only run on Linux. Sorry!
-#
 # DO NOT run as superuser, and never use untrusted oneliners, as they can
 # execute arbitrary code. Be safe.
 
@@ -78,7 +76,7 @@ def run(command):
 			name = random.choice(library)[0]
 
 		process = sub.Popen('%s/.temp_%s' % (os.getcwd(), name), stdout=sub.PIPE)
-		aplay_process = sub.Popen('aplay -q', stdin=process.stdout, shell=True, preexec_fn=os.setsid)
+		aplay_process = sub.Popen('sox -traw -r8000 -b8 -u - -tcoreaudio >/dev/null 2>&1', stdin=process.stdout, stdout=FNULL, shell=True, preexec_fn=os.setsid)
 		running.setdefault(name, []).append((process, aplay_process))
 
 	# stop the specified oneliner (if none specified, stop all)
@@ -249,9 +247,9 @@ def add_oneliner(oneliner):
 	name, code = oneliner
 	if name in RESERVED:
 		raise Exception('%s is a reserved word!' % name)
-	program = "main(t,v){for(t=0;;t++)putchar(%s);}" % code
+	program = "int main(int t, char *v[]){for(t=0;;t++)putchar(%s);}" % code
 	os.system('echo "%s" > .temp_%s.c' % (program, name))
-	os.system('gcc .temp_%s.c -o .temp_%s' % (name, name))
+	os.system('gcc .temp_%s.c -o .temp_%s >/dev/null 2>&1' % (name, name))
 	library.append(oneliner)
 
 def import_library(library):
